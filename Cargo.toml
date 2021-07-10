@@ -8,5 +8,16 @@ edition = "2018"
 [dependencies]
 kas = "0.8"
 wgpu = "0.9"
+winit = "0.25"
+naga = "0.5"
+hecs = "0.5"
+# File
 rkyv = "0.6"
 #nom = "6.2"
+
+# Math
+glam = "0.17"
+# Audio
+rodio = "0.14"
+# Image
+image = "0.23.14"
