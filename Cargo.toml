@@ -8,7 +8,7 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0"
 bytemuck = { version = "1.7", features = [ "derive" ] }
-kas = "0.8"
+imgui-wgpu = "0.16"
 wgpu = "0.9"
 winit = "0.25"
 naga = "0.5"
