@@ -1,4 +1,4 @@
-use glam::*;
+use cgmath::prelude::*;
 use rayon::prelude::*;
 use std::iter;
 use wgpu::util::DeviceExt;
@@ -27,7 +27,7 @@ impl Uniforms {
     fn new() -> Self {
         Self {
             view_position: [0.0; 4],
-            view_proj: glam::Mat4::identity().into(),
+            view_proj: cgmath::Matrix4::identity().into(),
         }
     }
 
@@ -39,17 +39,17 @@ impl Uniforms {
 }
 
 struct Instance {
-    position: glam::Vec3,
-    rotation: glam::Quat,
+    position: cgmath::Vector3<f32>,
+    rotation: cgmath::Quaternion<f32>,
 }
 
 impl Instance {
     fn to_raw(&self) -> InstanceRaw {
         InstanceRaw {
-            model: (glam::Mat4::from_translation(self.position)
-                * glam::Mat4::from(self.rotation))
+            model: (cgmath::Matrix4::from_translation(self.position)
+                * cgmath::Matrix4::from(self.rotation))
             .into(),
-            normal: glam::Mat3::from(self.rotation).into(),
+            normal: cgmath::Matrix3::from(self.rotation).into(),
         }
     }
 }
@@ -294,9 +294,9 @@ impl State {
             });
 
         // UPDATED!
-        let camera = camera::Camera::new((0.0, 5.0, 10.0), glam::Deg(-90.0), glam::Deg(-20.0));
+        let camera = camera::Camera::new((0.0, 5.0, 10.0), cgmath::Deg(-90.0), cgmath::Deg(-20.0));
         let projection =
-            camera::Projection::new(sc_desc.width, sc_desc.height, glam::Deg(45.0), 0.1, 100.0);
+            camera::Projection::new(sc_desc.width, sc_desc.height, cgmath::Deg(45.0), 0.1, 100.0);
         let camera_controller = camera::CameraController::new(4.0, 0.4);
 
         let mut uniforms = Uniforms::new();
@@ -317,17 +317,17 @@ impl State {
                     let x = SPACE_BETWEEN * (x as f32 - NUM_INSTANCES_PER_ROW as f32 / 2.0);
                     let z = SPACE_BETWEEN * (z as f32 - NUM_INSTANCES_PER_ROW as f32 / 2.0);
 
-                    let position = glam::Vec3 { x, y: 0.0, z };
+                    let position = cgmath::Vector3 { x, y: 0.0, z };
 
                     let rotation = if position.is_zero() {
-                        glam::Quat::from_axis_angle(
-                            glam::Vec3::unit_z(),
-                            glam::Deg(0.0),
+                        cgmath::Quaternion::from_axis_angle(
+                            cgmath::Vector3::unit_z(),
+                            cgmath::Deg(0.0),
                         )
                     } else {
-                        glam::Quat::from_axis_angle(
+                        cgmath::Quaternion::from_axis_angle(
                             position.clone().normalize(),
-                            glam::Deg(45.0),
+                            cgmath::Deg(45.0),
                         )
                     };
 
@@ -430,7 +430,7 @@ impl State {
             let shader = wgpu::ShaderModuleDescriptor {
                 label: Some("Normal Shader"),
                 flags: wgpu::ShaderFlags::all(),
-                source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
+                source: wgpu::ShaderSource::Wgsl(include_str!("../res/shaders/shader.wgsl").into()),
             };
             create_render_pipeline(
                 &device,
@@ -451,7 +451,7 @@ impl State {
             let shader = wgpu::ShaderModuleDescriptor {
                 label: Some("Light Shader"),
                 flags: wgpu::ShaderFlags::all(),
-                source: wgpu::ShaderSource::Wgsl(include_str!("light.wgsl").into()),
+                source: wgpu::ShaderSource::Wgsl(include_str!("../res/shaders/light.wgsl").into()),
             };
             create_render_pipeline(
                 &device,
@@ -464,8 +464,8 @@ impl State {
         };
 
         let debug_material = {
-            let diffuse_bytes = include_bytes!("../res/cobble-diffuse.png");
-            let normal_bytes = include_bytes!("../res/cobble-normal.png");
+            let diffuse_bytes = include_bytes!("../res/img/cobble-diffuse.png");
+            let normal_bytes = include_bytes!("../res/img/cobble-normal.png");
 
             let diffuse_texture = texture::Texture::from_bytes(
                 &device,
@@ -570,9 +570,9 @@ impl State {
         );
 
         // Update the light
-        let old_position: glam::Vec3 = self.light.position.into();
+        let old_position: cgmath::Vector3<_> = self.light.position.into();
         self.light.position =
-            (glam::Quat::from_axis_angle((0.0, 1.0, 0.0).into(), glam::Deg(1.0))
+            (cgmath::Quaternion::from_axis_angle((0.0, 1.0, 0.0).into(), cgmath::Deg(1.0))
                 * old_position)
                 .into();
         self.queue

@@ -1,26 +1,26 @@
-use glam::*;
+use cgmath::*;
 use std::f32::consts::FRAC_PI_2;
 use std::time::Duration;
 use winit::dpi::PhysicalPosition;
 use winit::event::*;
 
 #[rustfmt::skip]
-pub const OPENGL_TO_WGPU_MATRIX: glam::Mat4 = glam::mat4(
-    vec4(1.0, 0.0, 0.0, 0.0,),
-    vec4(0.0, 1.0, 0.0, 0.0,),
-    vec4(0.0, 0.0, 0.5, 0.0,),
-    vec4(0.0, 0.0, 0.5, 1.0,),
+pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.0,
+    0.0, 0.0, 0.5, 1.0,
 );
 
 #[derive(Debug)]
 pub struct Camera {
-    pub position: Vec3,
+    pub position: Point3<f32>,
     yaw: Rad<f32>,
     pitch: Rad<f32>,
 }
 
 impl Camera {
-    pub fn new<V: Into<Vec3>, Y: Into<Rad<f32>>, P: Into<Rad<f32>>>(
+    pub fn new<V: Into<Point3<f32>>, Y: Into<Rad<f32>>, P: Into<Rad<f32>>>(
         position: V,
         yaw: Y,
         pitch: P,
@@ -32,11 +32,11 @@ impl Camera {
         }
     }
 
-    pub fn calc_matrix(&self) -> Mat4 {
-        Mat4::look_to_rh(
+    pub fn calc_matrix(&self) -> Matrix4<f32> {
+        Matrix4::look_to_rh(
             self.position,
-            vec3(self.yaw.0.cos(), self.pitch.0.sin(), self.yaw.0.sin()).normalize(),
-            Vec3::unit_y(),
+            Vector3::new(self.yaw.0.cos(), self.pitch.0.sin(), self.yaw.0.sin()).normalize(),
+            Vector3::unit_y(),
         )
     }
 }
@@ -62,7 +62,7 @@ impl Projection {
         self.aspect = width as f32 / height as f32;
     }
 
-    pub fn calc_matrix(&self) -> Mat4 {
+    pub fn calc_matrix(&self) -> Matrix4<f32> {
         OPENGL_TO_WGPU_MATRIX * perspective(self.fovy, self.aspect, self.znear, self.zfar)
     }
 }
@@ -163,7 +163,7 @@ impl CameraController {
         // to get closer to an object you want to focus on.
         let (pitch_sin, pitch_cos) = camera.pitch.0.sin_cos();
         let scrollward =
-            vec3(pitch_cos * yaw_cos, pitch_sin, pitch_cos * yaw_sin).normalize();
+            Vector3::new(pitch_cos * yaw_cos, pitch_sin, pitch_cos * yaw_sin).normalize();
         camera.position += scrollward * self.scroll * self.speed * self.sensitivity * dt;
         self.scroll = 0.0;
 

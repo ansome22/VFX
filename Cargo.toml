@@ -21,8 +21,7 @@ futures = "0.3"
 rayon = "1.5"
 
 # Math
-glam = "0.17"
-#cgmath = "0.18"
+cgmath = "0.18"
 # Audio
 rodio = "0.14"
 # Image
@@ -34,3 +33,9 @@ rkyv = "0.7"
 #nom = "6.2"
 tobj = "3.0"
 gltf = "0.16"
+
+
+[build-dependencies]
+anyhow = "1.0"
+fs_extra = "1.2"
+glob = "0.3"
